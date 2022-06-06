@@ -99,3 +99,49 @@ test("에러가 발생합니까?", () => {
 test("에러가 발생합니까?", () => {
   expect(() => fn.throwErr()).toThrow("xx");
 }); // pass
+
+test("3초 후에 받아온 이름은 Mike", () => {
+  function callback(name) {
+    expect(name).toBe("Tom");
+  }
+  fn.getName(callback);
+}); // pass ... fail이 맞지만 jest는 콜백을 기다리지 않고 함수를 종료시킨다.
+
+test("3초 후에 받아온 이름은 Mike", (done) => {
+  function callback(name) {
+    expect(name).toBe("Tom");
+    done();
+  }
+  fn.getName(callback);
+}); // fail
+
+test("3초 후에 받아온 이름은 Mike", (done) => {
+  function callback(name) {
+    try {
+      expect(name).toBe("Mike");
+      done(); // done 콜백 함수가 실행될 때까지 기다린다.
+    } catch (error) {
+      done();
+    }
+  }
+  fn.getName(callback);
+}); // pass
+
+// resolves, rejects
+test("3초 후에 받아온 나이는 30", () => {
+  // return fn.getAge().then((age) => {
+  //   expect(age).toBe(30);
+  // }); // Promise를 사용할 때는 return을 써줘야 한다. 그렇지 않으면 종료된다.
+  return expect(fn.getAge()).resolves.toBe(30);
+}); // pass
+
+// fn.js의 getAge 함수에서 res(age) 대신 rej("error")를 사용하면 pass
+test("3초 후에 에러가 납니다.", () => {
+  return expect(fn.getAge()).rejects.toMatch("error");
+});
+
+test("3초 후에 에러가 납니다.", async () => {
+  // const age = await fn.getAge();
+  // expect(age).toBe(30);
+  return expect(fn.getAge()).resolves.toBe(30);
+}); // pass
